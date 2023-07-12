@@ -89,6 +89,11 @@ def word_already_in_deck(spanish_word):
         return False
 
 
+def should_proceed_on_user_input(message):
+    user_input = input(message)
+    return user_input.lower() == "y" or user_input.lower() == "Y"
+
+
 def add_word_to_anki(word):
     print()
 
@@ -110,8 +115,7 @@ def add_word_to_anki(word):
     print(json.dumps(note, indent=4, ensure_ascii=False))
     print()
 
-    user_input = input('Do you want to proceed? (y/N): ')
-    if user_input.lower() == "y" or user_input.lower() == "Y":
+    if should_proceed_on_user_input('Do you want to proceed? (y/N): '):
         # Send the request to AnkiConnect API
         req = {
             'action': "addNote",
@@ -164,7 +168,23 @@ def filler_progress_bar():
     time.sleep(1)
     print(".")
 
+
+def sync_anki_collection():
+    print('Syncing collection')
+    response = requests.post('http://localhost:8765/', data=json.dumps({'action': "sync"}))
+
+    # Check the response status
+    if response.status_code != 200:
+        raise Exception(f'Error syncing collection: {response.json().get("error")}')
+
+    if not should_proceed_on_user_input(colored('Refer to the Anki desktop app... did syncing complete successfully? (y/N): ', 'yellow')):
+        raise Exception('Failed to sync collection')
+
+
 def main():
+    sync_anki_collection()
+    filler_progress_bar()
+
     cache = loadDateCache()
 
     print('Getting all the currently available words')
@@ -195,21 +215,24 @@ def main():
                             print(f'\t\t{key}: {value.get("value")}')
 
                 print()
-                user_input = input(f'Do you want to continue adding the word {colored(word.spanish, "green")}? (y/N): ')
-                if user_input.lower() == "y" or user_input.lower() == "Y":
+                if should_proceed_on_user_input(f'Do you want to continue adding the word {colored(word.spanish, "green")}? (y/N): '):
                     add_word_to_anki(word)
                 else:
                     print('Skipping...')
 
         filler_progress_bar()
 
+    try:
+        sync_anki_collection()
+    except Exception:
+        print(colored('Failed syncing the collection during cleanup. Must manually sync collection', 'light_red'))
+
     updateCache(cache)
+    print()
+    print(colored("All done! Study hard!", "yellow"))
 
 
-print()
-print()
 print(colored("Let's add some new words to your flash cards!", "yellow"))
 filler_progress_bar()
-print()
 
 main()
