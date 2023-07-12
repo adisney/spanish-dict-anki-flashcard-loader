@@ -7,7 +7,9 @@ import json
 from datetime import datetime
 from collections import namedtuple
 
-Word = namedtuple("Word", ["date", "spanish", "english", "example", "translation"])
+ANKI_URL = 'http://localhost:8765'
+ANKI_DECK_NAME = 'Español'
+ANKI_NOTE_MODEL = 'Foreign Vocabulary (and reversed cards)'
 
 WORD_OF_THE_DAY_URL = 'https://www.spanishdict.com/wordoftheday'
 WORD_DIV_CLASS = 'IvPSNgXy'
@@ -17,10 +19,17 @@ SPANISH_WORD_CLASS = 'tds4TDh9'
 ENGLISH_WORD_CLASS = 'W9SgI1ND'
 EXAMPLE_PHRASE_CLASS = 'xiQBRZra'
 PHRASE_TRANSLATION_CLASS = 'KkXPxEB8'
-ANKI_DECK_NAME = 'Español'
-ANKI_NOTE_MODEL = 'Foreign Vocabulary (and reversed cards)'
 
-# Get the example provided and use that for the word phrase
+# *****************
+# General utilities
+# *****************
+
+Word = namedtuple("Word", ["date", "spanish", "english", "example", "translation"])
+
+
+def should_proceed_on_user_input(message):
+    user_input = input(message)
+    return user_input.lower() == "y" or user_input.lower() == "Y"
 
 
 def loadDateCache():
@@ -41,8 +50,22 @@ def updateCache(cache):
             dateCacheFile.write(f'{date}\n')
 
 
+def filler_progress_bar():
+    time.sleep(1)
+    print(".")
+    time.sleep(1)
+    print(".")
+    time.sleep(1)
+    print(".")
+
+
 def strip_gender_prefix(spanish_word):
     return re.sub(r'^El ', '', re.sub(r'^La ', '', spanish_word))
+
+
+# **************
+# Anki utilities
+# **************
 
 
 def find_anki_notes(spanish_word):
@@ -53,7 +76,7 @@ def find_anki_notes(spanish_word):
             'query': f'deck:{ANKI_DECK_NAME} (vocab:*{isolated_word}* or front:*{isolated_word}* or definition:*{isolated_word}* or back:*{isolated_word}*)'
         }
     }
-    response = requests.post('http://localhost:8765', data=json.dumps(payload))
+    response = requests.post(ANKI_URL, data=json.dumps(payload))
 
     if response.status_code != 200:
         raise Exception('Failure searching for Anki notes')
@@ -71,7 +94,7 @@ def find_anki_note_details(note_ids):
         }
     }
 
-    response = requests.post('http://localhost:8765', data=json.dumps(payload))
+    response = requests.post(ANKI_URL, data=json.dumps(payload))
     if response.status_code != 200:
         raise Exception('Failure searching for note details')
     elif 'error' in response.json():
@@ -80,24 +103,28 @@ def find_anki_note_details(note_ids):
     return response.json()
 
 
-def word_already_in_deck(spanish_word):
-    notes = find_anki_notes(spanish_word)
-
+def word_already_in_deck(notes):
     if notes:
         return True
     else:
         return False
 
 
-def should_proceed_on_user_input(message):
-    user_input = input(message)
-    return user_input.lower() == "y" or user_input.lower() == "Y"
+def sync_anki_collection():
+    print('Syncing collection')
+    response = requests.post('http://localhost:8765/', data=json.dumps({'action': "sync"}))
+
+    # Check the response status
+    if response.status_code != 200:
+        raise Exception(f'Error syncing collection: {response.json().get("error")}')
+
+    if not should_proceed_on_user_input(colored('Refer to the Anki desktop app... did syncing complete successfully? (y/N): ', 'yellow')):
+        raise Exception('Failed to sync collection')
 
 
 def add_word_to_anki(word):
     print()
 
-    # Create the note payload
     note = {
         'deckName': ANKI_DECK_NAME,
         'modelName': ANKI_NOTE_MODEL,
@@ -138,6 +165,10 @@ def add_word_to_anki(word):
         print('Not adding word...')
 
 
+# *****************
+# SpanishDict utils
+# *****************
+
 
 def get_current_words():
     words = []
@@ -160,25 +191,10 @@ def get_current_words():
 
     return words
 
-def filler_progress_bar():
-    time.sleep(1)
-    print(".")
-    time.sleep(1)
-    print(".")
-    time.sleep(1)
-    print(".")
 
-
-def sync_anki_collection():
-    print('Syncing collection')
-    response = requests.post('http://localhost:8765/', data=json.dumps({'action': "sync"}))
-
-    # Check the response status
-    if response.status_code != 200:
-        raise Exception(f'Error syncing collection: {response.json().get("error")}')
-
-    if not should_proceed_on_user_input(colored('Refer to the Anki desktop app... did syncing complete successfully? (y/N): ', 'yellow')):
-        raise Exception('Failed to sync collection')
+# ****
+# Main
+# ****
 
 
 def main():
@@ -198,11 +214,11 @@ def main():
 
             print(f'Found candidate: {colored(word.spanish, "green")} - {word.english}')
 
-            if not word_already_in_deck(word.spanish):
+            notes = find_anki_notes(word.spanish)
+            if not word_already_in_deck(notes):
                 print('No conflicts found')
                 add_word_to_anki(word)
             else:
-                notes = find_anki_notes(word.spanish)
 
                 if notes:
                     details = find_anki_note_details(notes)
