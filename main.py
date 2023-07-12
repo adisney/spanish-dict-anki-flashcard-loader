@@ -158,9 +158,9 @@ def add_word_to_anki(word):
             if response_json.__class__ == int:
                 print(colored('Word added to Anki flashcards successfully.', 'cyan'))
             elif 'error' in response.json():
-                print(f'Error adding word to Anki: {response.json().get("error")}')
+                print(f'{colored("Error adding word to Anki:", "light_red")} {response.json().get("error")}')
             else:
-                print(f'Unknown error adding word to Anki: {response_json}')
+                print(colored(f'Unknown error adding word to Anki: {response_json}', "light_red"))
     else:
         print('Not adding word...')
 
