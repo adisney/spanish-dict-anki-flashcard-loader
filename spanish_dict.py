@@ -22,7 +22,7 @@ Definition = namedtuple("Definition", ["from_word", "synonyms", "to_words", "fro
 ToWord = namedtuple("ToWord", ["classification", "to_word"])
 
 
-def get_current_words():
+def get_current_words_of_the_day():
     words = []
     current_year = str(datetime.now().year)
 
@@ -43,6 +43,7 @@ def get_current_words():
 
     return words
 
+
 def get_def_es_en(english_word):
     return get_def(f'{SPANISH_TO_ENGLISH_URL}{english_word}')
 
@@ -55,7 +56,7 @@ def get_def(url):
     response = requests.get(url)
 
     if response.status_code != 200:
-        raise Exception(f'Failure finding definition for {english_word}')
+        raise Exception('Failure finding definition')
 
     soup = BeautifulSoup(response.text, 'html.parser')
     defs = soup.find_all('table', {'class': 'WRD'})
@@ -72,7 +73,12 @@ def get_def(url):
     for r in rows:
         if r.has_attr('class') and (r['class'][0] == 'even' or r['class'][0] == 'odd'):
             if from_word and r['class'][0] != current_class:
-                newDefinition = Definition(from_word, synonym, [ToWord(c, t) for c, t in to_words], from_example, to_example)
+                to_words = [ToWord(c, t) for c, t in to_words]
+                newDefinition = Definition(from_word,
+                                           synonym,
+                                           to_words,
+                                           from_example,
+                                           to_example)
                 possibleDefinitions.append(newDefinition)
 
                 current_class = 'odd' if current_class == 'even' else 'even'

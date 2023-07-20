@@ -1,4 +1,9 @@
+import re
 import time
+
+
+def strip_gender_prefix(spanish_word):
+    return re.sub(r'^El ', '', re.sub(r'^La ', '', spanish_word))
 
 
 def should_proceed_on_user_input(message):
