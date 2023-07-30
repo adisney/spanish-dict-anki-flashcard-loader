@@ -52,7 +52,7 @@ def get_def_en_es(spanish_word, count=5):
     return get_def(f'{ENGLISH_TO_SPANISH_URL}{spanish_word}', count)
 
 
-def get_def(url, num_translations_threshold = 5):
+def get_def(url, num_translations_threshold=5):
     response = requests.get(url)
 
     if response.status_code != 200:

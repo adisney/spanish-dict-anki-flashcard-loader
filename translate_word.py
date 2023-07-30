@@ -61,12 +61,12 @@ def main():
 
     spanish_to_english_parser = subparsers.add_parser('esen')
     spanish_to_english_parser.add_argument('word', help='The word to translate')
-    spanish_to_english_parser.add_argument('-c', '--count', help='Max number of translations to display', type=int)
+    spanish_to_english_parser.add_argument('-c', '--count', help='Max number of translations to display', type=int, default=5)
     spanish_to_english_parser.set_defaults(func=get_english_translation)
 
     english_to_spanish_parser = subparsers.add_parser('enes')
     english_to_spanish_parser.add_argument('word', help='The word to translate')
-    english_to_spanish_parser.add_argument('-c', '--count', help='Max number of translations to display', type=int)
+    english_to_spanish_parser.add_argument('-c', '--count', help='Max number of translations to display', type=int, default=5)
     english_to_spanish_parser.set_defaults(func=get_spanish_translation)
 
     args = parser.parse_args()
