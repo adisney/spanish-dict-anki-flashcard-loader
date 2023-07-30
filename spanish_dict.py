@@ -44,15 +44,15 @@ def get_current_words_of_the_day():
     return words
 
 
-def get_def_es_en(english_word):
-    return get_def(f'{SPANISH_TO_ENGLISH_URL}{english_word}')
+def get_def_es_en(english_word, count=5):
+    return get_def(f'{SPANISH_TO_ENGLISH_URL}{english_word}', count)
 
 
-def get_def_en_es(spanish_word):
-    return get_def(f'{ENGLISH_TO_SPANISH_URL}{spanish_word}')
+def get_def_en_es(spanish_word, count=5):
+    return get_def(f'{ENGLISH_TO_SPANISH_URL}{spanish_word}', count)
 
 
-def get_def(url):
+def get_def(url, num_translations_threshold = 5):
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -87,6 +87,9 @@ def get_def(url):
                 to_words = []
                 to_example = ''
                 synonym = ''
+
+            if len(possibleDefinitions) >= num_translations_threshold:
+                break
 
             tds = r.find_all('td')
             # Gather the word being defined, word definitions, classification and synonyms

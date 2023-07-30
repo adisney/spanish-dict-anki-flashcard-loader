@@ -13,17 +13,19 @@ class OriginLanguage(Enum):
 
 
 def get_spanish_translation(args):
-    get_translation(spanish_dict.get_def_en_es, args.word, OriginLanguage.ENGLISH)
+    get_translation(spanish_dict.get_def_en_es, args.word, OriginLanguage.ENGLISH, args.count)
 
 
 def get_english_translation(args):
-    get_translation(spanish_dict.get_def_es_en, args.word, OriginLanguage.SPANISH)
+    get_translation(spanish_dict.get_def_es_en, args.word, OriginLanguage.SPANISH, args.count)
 
 
-def get_translation(def_func, word, originLanguage):
+def get_translation(def_func, word, originLanguage, count):
+    commands.sync_anki_collection()
+
     print("")
     print(f"Getting definition for {colored(word, 'green')}")
-    definitions = def_func(word)
+    definitions = def_func(word, count)
 
     print("")
     print(f"Found {colored(len(definitions), 'yellow')} definitions")
@@ -58,11 +60,13 @@ def main():
     subparsers = parser.add_subparsers(required=True)
 
     spanish_to_english_parser = subparsers.add_parser('esen')
-    spanish_to_english_parser.add_argument('word')
+    spanish_to_english_parser.add_argument('word', help='The word to translate')
+    spanish_to_english_parser.add_argument('-c', '--count', help='Max number of translations to display', type=int)
     spanish_to_english_parser.set_defaults(func=get_english_translation)
 
     english_to_spanish_parser = subparsers.add_parser('enes')
-    english_to_spanish_parser.add_argument('word')
+    english_to_spanish_parser.add_argument('word', help='The word to translate')
+    english_to_spanish_parser.add_argument('-c', '--count', help='Max number of translations to display', type=int)
     english_to_spanish_parser.set_defaults(func=get_spanish_translation)
 
     args = parser.parse_args()
@@ -71,6 +75,4 @@ def main():
 
 print("")
 
-commands.sync_anki_collection()
 main()
-commands.sync_anki_collection()
