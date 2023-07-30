@@ -41,7 +41,7 @@ def find_potential_conflicts(word, notes):
     details = anki.find_anki_note_details(notes)
 
     print()
-    print(colored(f'Potential conflicts for {word.spanish}:', "light_red"))
+    print(f"{colored('Potential conflicts for', 'light_red')} {colored(word.spanish, 'green')}{colored(':', 'light_red')}")
     for detail in details:
         print(f'\t{colored("Conflict", "light_red")}:')
         for key, value in detail.get('fields').items():
@@ -60,4 +60,4 @@ def try_add_word(word):
         if util.should_proceed_on_user_input(f'Do you want to continue adding the word {colored(word.spanish, "green")}? (y/N): '):
             add_word_to_anki(word)
         else:
-            print('Skipping...')
+            print('Not adding word to deck...')

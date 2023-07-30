@@ -46,7 +46,7 @@ def get_definition(def_func, word, originLanguage):
                 options.append(util.UserInputOption(f"{d.from_word} ⇒ {t.to_word}", data))
         translation_to_add = util.user_select_option('Select which translation to add...', options)
 
-        commands.add_word_to_anki(translation_to_add)
+        commands.try_add_word(translation_to_add)
 
 
 parser = argparse.ArgumentParser(
