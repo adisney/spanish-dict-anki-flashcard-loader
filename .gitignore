@@ -1,3 +1,6 @@
 __pycache__
 .word-of-the-day
 .data/*
+*.spec
+dist/*
+build/*
