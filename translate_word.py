@@ -6,20 +6,21 @@ import spanish_dict
 import commands
 import argparse
 
+
 class OriginLanguage(Enum):
     SPANISH = "ES"
     ENGLISH = "EN"
 
 
 def get_spanish_translation(args):
-    get_definition(spanish_dict.get_def_en_es, args.word, OriginLanguage.ENGLISH)
+    get_translation(spanish_dict.get_def_en_es, args.word, OriginLanguage.ENGLISH)
 
 
 def get_english_translation(args):
-    get_definition(spanish_dict.get_def_es_en, args.word, OriginLanguage.SPANISH)
+    get_translation(spanish_dict.get_def_es_en, args.word, OriginLanguage.SPANISH)
 
 
-def get_definition(def_func, word, originLanguage):
+def get_translation(def_func, word, originLanguage):
     print("")
     print(f"Getting definition for {colored(word, 'green')}")
     definitions = def_func(word)
@@ -36,7 +37,8 @@ def get_definition(def_func, word, originLanguage):
             print(f"\t- {t.to_word} {t.classification if t.classification else ''}")
 
     print("")
-    if util.should_proceed_on_user_input(colored(f"{colored('Would you like to add one of these definitions to Anki?', 'yellow')} (y/N)")):
+    message = colored(f"{colored('Would you like to add one of these definitions to Anki?', 'yellow')} (y/N)")
+    if util.should_proceed_on_user_input(message):
         options = []
         for d in definitions:
             for t in d.to_words:
@@ -49,18 +51,26 @@ def get_definition(def_func, word, originLanguage):
         commands.try_add_word(translation_to_add)
 
 
-parser = argparse.ArgumentParser(
-                    prog='Check Definition',
-                    description='Obtains the Spanish or English translation of a word')
-subparsers = parser.add_subparsers(required=True)
+def main():
+    parser = argparse.ArgumentParser(
+                        prog='Check Translation',
+                        description='Obtains the Spanish or English translation of a word')
+    subparsers = parser.add_subparsers(required=True)
 
-spanish_to_english_parser = subparsers.add_parser('esen')
-spanish_to_english_parser.add_argument('word')
-spanish_to_english_parser.set_defaults(func=get_english_translation)
+    spanish_to_english_parser = subparsers.add_parser('esen')
+    spanish_to_english_parser.add_argument('word')
+    spanish_to_english_parser.set_defaults(func=get_english_translation)
 
-english_to_spanish_parser = subparsers.add_parser('enes')
-english_to_spanish_parser.add_argument('word')
-english_to_spanish_parser.set_defaults(func=get_spanish_translation)
+    english_to_spanish_parser = subparsers.add_parser('enes')
+    english_to_spanish_parser.add_argument('word')
+    english_to_spanish_parser.set_defaults(func=get_spanish_translation)
 
-args = parser.parse_args()
-args.func(args)
+    args = parser.parse_args()
+    args.func(args)
+
+
+print("")
+
+commands.sync_anki_collection()
+main()
+commands.sync_anki_collection()
