@@ -26,7 +26,7 @@ def add_word_to_anki(word):
     print(json.dumps(note, indent=4, ensure_ascii=False))
     print()
 
-    if util.should_proceed_on_user_input('Do you want to proceed? (y/N): '):
+    if util.should_proceed_on_user_input(f"{colored('Do you want to proceed?', 'yellow')} (y/N): "):
         result = anki.add_note_to_collection(note)
 
         if 'error' in result:
@@ -34,7 +34,7 @@ def add_word_to_anki(word):
         else:
             print(colored('Word added to Anki flashcards successfully.', 'cyan'))
     else:
-        print('Not adding word...')
+        print(colored('Not adding word...', 'red'))
 
 
 def find_potential_conflicts(word, notes):

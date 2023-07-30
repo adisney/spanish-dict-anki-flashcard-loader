@@ -94,6 +94,7 @@ def get_def(url):
                 # Get the from_word aka the word being defined
                 if tds[0].has_attr('class') and tds[0]['class'][0] == 'FrWrd':
                     from_word = tds[0].find('strong').text
+                    from_word = re.sub("⇒", '', from_word)
 
                 # Get the synonyms and/or classification of the word if available
                 classification = tds[1].find('span').text if tds[1].find('span') else ''
@@ -104,6 +105,7 @@ def get_def(url):
                 # Get one of the to_words aka the definitions
                 type_of_word = tds[2].find('em').text
                 defn = re.sub(f'{type_of_word}$', '', tds[2].text).strip()
+                defn = re.sub("⇒", '', defn)
                 to_words.append((classification, defn))
             # See if we can get some example sentences
             elif len(tds) == 2:

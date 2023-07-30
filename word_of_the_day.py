@@ -6,7 +6,7 @@ import spanish_dict
 import commands
 
 
-def main():
+def add_words_of_the_day():
     commands.sync_anki_collection()
     util.filler_progress_bar()
 
@@ -38,4 +38,4 @@ def main():
 print(colored("Let's add some new words to your flash cards!", "yellow"))
 util.filler_progress_bar()
 
-main()
+add_words_of_the_day()
