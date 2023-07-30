@@ -26,10 +26,10 @@ def user_select_option(title, options):
     return options[index].data
 
 
-def loadDateCache():
+def loadDateCache(cache_dir='./.data/'):
     cache = set()
     try:
-        with open('.data/date_cache.txt', 'r') as dateCacheFile:
+        with open(f'{cache_dir}/date_cache.txt', 'r') as dateCacheFile:
             for line in dateCacheFile.readlines():
                 cache.add(line.strip())
     except FileNotFoundError:
@@ -38,8 +38,8 @@ def loadDateCache():
     return cache
 
 
-def updateCache(cache):
-    with open('.data/date_cache.txt', 'w') as dateCacheFile:
+def updateCache(cache, cache_dir="./.data/"):
+    with open(f'{cache_dir}/date_cache.txt', 'w') as dateCacheFile:
         for date in sorted(cache):
             dateCacheFile.write(f'{date}\n')
 

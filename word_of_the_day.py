@@ -1,16 +1,16 @@
 from termcolor import colored
+import argparse
 
-import anki
 import util
 import spanish_dict
 import commands
 
 
-def add_words_of_the_day():
+def add_words_of_the_day(args):
     commands.sync_anki_collection()
     util.filler_progress_bar()
 
-    cache = util.loadDateCache()
+    cache = util.loadDateCache(args.cache_file)
 
     print('Getting all the currently available words')
     util.filler_progress_bar()
@@ -30,7 +30,7 @@ def add_words_of_the_day():
     except Exception:
         print(colored('Failed syncing the collection during cleanup. Must manually sync collection', 'light_red'))
 
-    util.updateCache(cache)
+    util.updateCache(cache, args.cache_file)
     print()
     print(colored("All done! Study hard!", "yellow"))
 
@@ -38,4 +38,10 @@ def add_words_of_the_day():
 print(colored("Let's add some new words to your flash cards!", "yellow"))
 util.filler_progress_bar()
 
-add_words_of_the_day()
+parser = argparse.ArgumentParser(
+                    prog='WordOfTheDay',
+                    description='Add SpanishDict\'s Words of the Day to Anki')
+parser.add_argument('-c', '--cache_file', help='Directory containing the date cache', default='./.data')
+args = parser.parse_args()
+
+add_words_of_the_day(args)
