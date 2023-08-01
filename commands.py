@@ -1,8 +1,15 @@
 import json
 from termcolor import colored
+from enum import Enum
 
 import util
 import anki
+
+
+class AddNoteOptions(Enum):
+    CONTINUE = 0
+    ABORT = 1
+    CUSTOM = 2
 
 
 def sync_anki_collection():
@@ -17,24 +24,60 @@ def sync_anki_collection():
         raise Exception('Failed to sync collection')
 
 
+def customize_note_fields(note):
+    print()
+    print("Current note is:")
+    print(json.dumps(note, indent=4, ensure_ascii=False))
+
+    options = [util.UserInputOption(k, (k, v)) for k, v in note["fields"].items()]
+    options.insert(0, util.UserInputOption("Done customizing...", False))
+    to_customize = util.user_select_option(colored("What field would you like to modify?", "yellow"), options)
+    if not to_customize:
+        print("Done customizing note.")
+        return note
+    else:
+        key, value = to_customize
+        print("Customizing...")
+        print("")
+        print(f"Current value for {colored(key, 'green')} is {colored(value, 'yellow')}.")
+        new_value = input("What should the new value be? : ")
+        print("")
+        print("Updating value...")
+        note["fields"][key] = new_value
+
+    return customize_note_fields(note)
+
+
 def add_word_to_anki(word):
     print()
 
     note = anki.build_note(word)
+    add_note_to_anki(note)
 
+
+def add_note_to_anki(note):
     print(colored('Adding the following note to Anki:', 'yellow'))
     print(json.dumps(note, indent=4, ensure_ascii=False))
     print()
 
-    if util.should_proceed_on_user_input(f"{colored('Do you want to proceed?', 'yellow')} (y/N): "):
+    options = [
+        util.UserInputOption("No", AddNoteOptions.ABORT),
+        util.UserInputOption("Yes", AddNoteOptions.CONTINUE),
+        util.UserInputOption("Customize note", AddNoteOptions.CUSTOM),
+    ]
+    result = util.user_select_option(colored('Do you want to proceed?', 'yellow'), options)
+    if result == AddNoteOptions.ABORT:
+        print(colored('Not adding word...', 'red'))
+    elif result == AddNoteOptions.CONTINUE:
         result = anki.add_note_to_collection(note)
 
         if 'error' in result:
             print(f'{colored("Error adding word to Anki:", "light_red")} {result["error"]}')
         else:
             print(colored('Word added to Anki flashcards successfully.', 'cyan'))
-    else:
-        print(colored('Not adding word...', 'red'))
+    elif result == AddNoteOptions.CUSTOM:
+        new_note = customize_note_fields(note)
+        add_note_to_anki(new_note)
 
 
 def find_potential_conflicts(word, notes):
