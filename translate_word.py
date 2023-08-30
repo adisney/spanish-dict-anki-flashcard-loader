@@ -55,6 +55,8 @@ def get_translation(def_func, word, originLanguage, args):
             translation_to_add = util.user_select_option('Select which translation to add...', options)
 
             commands.try_add_word(translation_to_add)
+            if not args.no_sync:
+                commands.sync_anki_collection()
 
 
 def main():
