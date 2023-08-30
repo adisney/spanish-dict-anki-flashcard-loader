@@ -1,4 +1,5 @@
 import re
+import readline
 import time
 from collections import namedtuple
 from termcolor import colored
