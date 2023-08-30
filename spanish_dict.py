@@ -4,6 +4,7 @@ from collections import namedtuple
 from bs4 import BeautifulSoup
 from itertools import chain
 import re
+from enum import Enum
 
 SPANISH_TO_ENGLISH_URL = 'https://www.wordreference.com/es/en/translation.asp?spen='
 ENGLISH_TO_SPANISH_URL = 'https://www.wordreference.com/es/translation.asp?tranword='
@@ -20,6 +21,36 @@ PHRASE_TRANSLATION_CLASS = 'al0K82xM'
 Word = namedtuple("Word", ["date", "spanish", "english", "example", "translation"])
 Definition = namedtuple("Definition", ["from_word", "synonyms", "to_words", "from_example", "to_example"])
 ToWord = namedtuple("ToWord", ["classification", "to_word"])
+
+
+class WordGenderPrefix(Enum):
+    UNDEFINED = ""
+    MASCULINE = "El"
+    FEMININE = "La"
+
+    @staticmethod
+    def from_abbrev(noun_abbrev):
+        if noun_abbrev == "nf":
+            return WordGenderPrefix.FEMININE
+        elif noun_abbrev == "nm":
+            return WordGenderPrefix.MASCULINE
+        else:
+            return WordGenderPrefix.UNDEFINED
+
+    @staticmethod
+    def from_markup(element):
+        word_annotation = element.find('em', class_="POS2")
+
+        if word_annotation:
+            return WordGenderPrefix.from_abbrev(word_annotation.text)
+
+        return WordGenderPrefix.UNDEFINED
+
+    def apply_prefix(this, word):
+        if this == WordGenderPrefix.UNDEFINED:
+            return word
+
+        return f"{this.value} {word}"
 
 
 def get_current_words_of_the_day():
@@ -69,12 +100,17 @@ def get_def(url, num_translations_threshold=5):
     to_example = ''
     synonym = ''
     possibleDefinitions = []
+    from_gender = WordGenderPrefix.UNDEFINED
+
+    def can_finalize_definition(from_word, current_class, row):
+        return from_word and row['class'][0] != current_class
 
     for r in rows:
         if r.has_attr('class') and (r['class'][0] == 'even' or r['class'][0] == 'odd'):
-            if from_word and r['class'][0] != current_class:
+            if can_finalize_definition(from_word, current_class, r):
                 to_words = [ToWord(c, t) for c, t in to_words]
-                newDefinition = Definition(from_word,
+                formatted_from_word = from_gender.apply_prefix(from_word).capitalize()
+                newDefinition = Definition(formatted_from_word,
                                            synonym,
                                            to_words,
                                            from_example,
@@ -98,6 +134,7 @@ def get_def(url, num_translations_threshold=5):
                 if tds[0].has_attr('class') and tds[0]['class'][0] == 'FrWrd':
                     from_word = tds[0].find('strong').text
                     from_word = re.sub("⇒", '', from_word)
+                    from_gender = WordGenderPrefix.from_markup(tds[0])
 
                 # Get the synonyms and/or classification of the word if available
                 classification = tds[1].find('span').text if tds[1].find('span') else ''
@@ -107,8 +144,10 @@ def get_def(url, num_translations_threshold=5):
 
                 # Get one of the to_words aka the definitions
                 type_of_word = tds[2].find('em').text
+                to_gender = WordGenderPrefix.from_markup(tds[2])
                 defn = re.sub(f'{type_of_word}$', '', tds[2].text).strip()
                 defn = re.sub("⇒", '', defn)
+                defn = to_gender.apply_prefix(defn).capitalize()
                 to_words.append((classification, defn))
             # See if we can get some example sentences
             elif len(tds) == 2:

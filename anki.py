@@ -1,9 +1,5 @@
-import re
 import requests
 import json
-from termcolor import colored
-
-import util
 
 
 ANKI_URL = 'http://localhost:8765'
@@ -71,8 +67,8 @@ def build_note(word):
         'deckName': ANKI_DECK_NAME,
         'modelName': ANKI_NOTE_MODEL,
         'fields': {
-            'Vocab': word.spanish,
-            'Definition': word.english,
+            'Vocab': word.spanish.capitalize(),
+            'Definition': word.english.capitalize(),
             'Example Phrase': word.example,
             'Phrase Translation': word.translation,
         },
