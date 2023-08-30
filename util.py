@@ -1,5 +1,5 @@
 import re
-import readline
+import readline  # noqa: F401
 import time
 from collections import namedtuple
 from termcolor import colored
