@@ -8,13 +8,13 @@ import re
 SPANISH_TO_ENGLISH_URL = 'https://www.wordreference.com/es/en/translation.asp?spen='
 ENGLISH_TO_SPANISH_URL = 'https://www.wordreference.com/es/translation.asp?tranword='
 WORD_OF_THE_DAY_URL = 'https://www.spanishdict.com/wordoftheday'
-WORD_DIV_CLASS = 'IvPSNgXy'
-MONTH_CLASS = 'jkQASa0U'
-DATE_CLASS = 'Pu6E7CK7'
-SPANISH_WORD_CLASS = 'tds4TDh9'
-ENGLISH_WORD_CLASS = 'W9SgI1ND'
-EXAMPLE_PHRASE_CLASS = 'xiQBRZra'
-PHRASE_TRANSLATION_CLASS = 'KkXPxEB8'
+WORD_DIV_CLASS = 'eu9Qav45'
+MONTH_CLASS = 'uritWpC8'
+DATE_CLASS = 'YjvKQUha'
+SPANISH_WORD_CLASS = 'MhZ0VHvJ'
+ENGLISH_WORD_CLASS = 'UEv2G6u_'
+EXAMPLE_PHRASE_CLASS = 'S59euzHw'
+PHRASE_TRANSLATION_CLASS = 'al0K82xM'
 
 
 Word = namedtuple("Word", ["date", "spanish", "english", "example", "translation"])

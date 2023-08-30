@@ -15,7 +15,9 @@ def add_words_of_the_day(args):
     print('Getting all the currently available words')
     util.filler_progress_bar()
 
-    for word in spanish_dict.get_current_words_of_the_day():
+    words = spanish_dict.get_current_words_of_the_day()
+    print(f'Received {len(words)} words')
+    for word in words:
         if word.date in cache:
             print(f'Word from {word.date} already in cache. Moving to next one.')
         else:
